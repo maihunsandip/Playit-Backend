@@ -138,4 +138,36 @@ const loginUser = asyncHandler(async (req, res) => {
     )
 });
 
-export { registerUser }
+const logoutUser = asyncHandler(async (req, res) => {
+    // find user in database and remove refresh token
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: null
+            }
+        },
+        {
+            new: true
+        });
+
+    // return success response and clear cookies
+    const options = {
+        httpOnly: true,
+        secure: true,
+    }
+
+    return res
+        .status(200)
+        .clearCookies("accessToken", options)
+        .clearCookies("refreshToken", options)
+        .json(
+            new ApiResponse(
+                200,
+                null,
+                "User logged out successfully"
+            )
+        )
+});
+
+export { registerUser, loginUser, logoutUser };
